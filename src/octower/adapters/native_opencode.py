@@ -145,7 +145,7 @@ def _status(
     human_waiting: bool,
 ) -> str | None:
     if advisory is not None:
-        return advisory.type if advisory.type in {"idle", "busy", "retry"} else "busy"
+        return advisory.type if advisory.type in {"idle", "busy", "retry"} else None
     if (
         final_completed
         and not any(state in {"pending", "running"} for state in tool_states)
@@ -154,7 +154,7 @@ def _status(
         and not human_waiting
     ):
         return "idle"
-    return "busy"
+    return None
 
 
 def _last_activity(messages: list[Message]) -> float | None:
@@ -171,7 +171,7 @@ def _timestamps(message: Message) -> tuple[float | None, ...]:
     values: list[float | None] = []
     for time in (message.time, *(part.get("time") for part in message.parts)):
         if isinstance(time, dict):
-            for key in ("completed",):
+            for key in ("created", "completed"):
                 value = time.get(key)
                 if isinstance(value, (int, float)):
                     values.append(float(value) / 1000 if value > 100_000_000_000 else float(value))

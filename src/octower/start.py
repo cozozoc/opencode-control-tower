@@ -171,21 +171,50 @@ async def _recover_session(client: OpenCodeClient, session_id: str) -> None:
         print(f"[{_ts()} octower] recovery failed for {session_id}: {exc}")
 
 
+def _detect_platform() -> HostPlatform:
+    """Auto-detect WSL2 vs native Windows at runtime."""
+    if "WSL_DISTRO_NAME" in os.environ or "WSL_INTEROP" in os.environ:
+        return HostPlatform.WSL2
+    return HostPlatform.WINDOWS
+
+
+def _ensure_tmux() -> None:
+    """Auto-install tmux on WSL2 if missing."""
+    import subprocess as _sp
+    if _sp.run(["which", "tmux"], capture_output=True).returncode != 0:
+        print(f"[{_ts()} octower] tmux not found, installing...")
+        _sp.run(["sudo", "apt-get", "update", "-qq"], check=False)
+        _sp.run(["sudo", "apt-get", "install", "-y", "-qq", "tmux"], check=True)
+        print(f"[{_ts()} octower] tmux installed")
+
+
 async def _open_attach_tab(backend: BackendProcess, client: OpenCodeClient) -> None:
-    """Wait for backend healthy, then open Windows Terminal attach tab."""
+    """Wait for backend healthy, then open a terminal window/tab for attach."""
     import subprocess as _sp
     while backend.report.state.value not in ("healthy",):
         await anyio.sleep(1)
     port = int(backend.endpoint.split(":")[-1])
     name = Path.cwd().name
     tab_title = name if len(name) <= 25 else name[:24] + "…"
-    ps_cmd = f"& '{resolve_opencode_executable(HostPlatform.WINDOWS)}' attach http://127.0.0.1:{port}"
-    _sp.Popen(
-        ["wt", "-w", "0", "new-tab", "--title", tab_title, "--suppressApplicationTitle",
-         "powershell", "-NoExit", "-Command", ps_cmd],
-        cwd=Path.cwd(),
-    )
-    print(f"[{_ts()} octower] attach tab opened on port {port}")
+    platform = _detect_platform()
+    exe = resolve_opencode_executable(platform)
+
+    if platform is HostPlatform.WSL2:
+        _ensure_tmux()
+        ts = time.strftime("%H%M%S")
+        session = f"octower-{ts}"
+        _sp.run(["tmux", "new-session", "-d", "-s", session, "-n", "octower",
+                 exe, "attach", f"http://127.0.0.1:{port}"], check=False)
+        _sp.run(["tmux", "rename-window", "-t", f"{session}:octower", tab_title], check=False)
+        print(f"[{_ts()} octower] tmux session {session} created, attach: tmux attach -t {session}")
+    else:
+        ps_cmd = f"& '{exe}' attach http://127.0.0.1:{port}"
+        _sp.Popen(
+            ["wt", "-w", "0", "new-tab", "--title", tab_title, "--suppressApplicationTitle",
+             "powershell", "-NoExit", "-Command", ps_cmd],
+            cwd=Path.cwd(),
+        )
+        print(f"[{_ts()} octower] attach tab opened on port {port}")
 
 
 async def _monitor(backend: BackendProcess, client: OpenCodeClient, classifier: AgentStateClassifier, started_at: float, launch: bool = False) -> None:
@@ -212,9 +241,9 @@ async def _monitor(backend: BackendProcess, client: OpenCodeClient, classifier: 
 
 async def _async_main(options: StartOptions, data_dir: Path) -> None:
     port = options.port if options.port is not None else allocate_localhost_port()
-    executable = resolve_opencode_executable(HostPlatform.WINDOWS)
+    executable = resolve_opencode_executable(_detect_platform())
     plan = build_launch_plan(
-        LauncherConfig(options.project, _ROOT_SESSION_ID),
+        LauncherConfig(options.project, _ROOT_SESSION_ID, platform=_detect_platform()),
         LaunchIdentity(port, f"octower-{uuid4().hex}"),
         executable,
     )
