@@ -255,6 +255,9 @@ async def _async_main(options: StartOptions, data_dir: Path) -> None:
     health = HttpHealthProbe(timeout=2.0)
     journal = RecoveryJournal(data_dir / "octower" / "recovery.jsonl")
     thresholds = ThresholdConfig(slow_seconds=5, suspect_seconds=10, stall_seconds=15, stall_confirm_seconds=2, stall_confirm_samples=2) if options.fast else ThresholdConfig()
+    platform = _detect_platform()
+    health_timeout = 10.0 if platform is HostPlatform.WSL2 else 2.0
+    shutdown_timeout = 10.0 if platform is HostPlatform.WSL2 else 5.0
     rehydration = RehydrationAdapter(
         client,
         SessionReconciler(_ROOT_SESSION_ID, client),
@@ -276,13 +279,6 @@ async def _async_main(options: StartOptions, data_dir: Path) -> None:
         BackendDependencies(SubprocessRunner(environment), health, rehydration, TuiNop()),
     )
     _print_instructions(plan.endpoint, port, options.fast)
-    platform = _detect_platform()
-    if platform is HostPlatform.WSL2:
-        health_timeout = 10.0
-        shutdown_timeout = 10.0
-    else:
-        health_timeout = 2.0
-        shutdown_timeout = 5.0
     started_at = time.time()
     try:
         await _monitor(backend, client, AgentStateClassifier(_MonotonicClock(), thresholds), started_at, launch=options.launch)
