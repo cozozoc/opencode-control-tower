@@ -206,7 +206,16 @@ async def _open_attach_tab(backend: BackendProcess, client: OpenCodeClient) -> N
         _sp.run(["tmux", "new-session", "-d", "-s", session, "-n", "octower",
                  exe, "attach", f"http://127.0.0.1:{port}"], check=False)
         _sp.run(["tmux", "rename-window", "-t", f"{session}:octower", tab_title], check=False)
-        print(f"[{_ts()} octower] tmux session {session} created, attach: tmux attach -t {session}")
+        print(f"[{_ts()} octower] tmux session {session} created")
+        if "WT_SESSION" in os.environ:
+            _sp.run(
+                ["wt.exe", "-w", "0", "new-tab", "--title", tab_title, "--suppressApplicationTitle",
+                 "wsl.exe", "tmux", "attach", "-t", session],
+                check=False,
+            )
+            print(f"[{_ts()} octower] Windows Terminal tab opened")
+        else:
+            print(f"[{_ts()} octower] attach: tmux attach -t {session}")
     else:
         ps_cmd = f"& '{exe}' attach http://127.0.0.1:{port}"
         _sp.Popen(
