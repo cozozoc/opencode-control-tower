@@ -61,8 +61,13 @@ class SubprocessRunner:
         if _on_windows():
             kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
         else:
-            kwargs["preexec_fn"] = os.setsid
-        return subprocess.Popen(command, **kwargs)
+            kwargs["start_new_session"] = True
+        proc = subprocess.Popen(command, **kwargs)
+        import time
+        time.sleep(0.5)
+        if proc.poll() is not None:
+            raise ProcessStartError(command, f"process exited immediately with code {proc.returncode}")
+        return proc
 
 
 async def stop_process(handle: SubprocessHandle, timeout: float) -> None:

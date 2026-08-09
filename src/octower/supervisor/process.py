@@ -14,9 +14,13 @@ class ProcessStartError(RuntimeError):
     """An injected runner could not create the requested child process."""
 
     command: tuple[str, ...]
+    detail: str = ""
 
     def __str__(self) -> str:
-        return f"failed to start process: {self.command[0]}"
+        msg = f"failed to start process: {self.command[0]}"
+        if self.detail:
+            msg += f" ({self.detail})"
+        return msg
 
 
 class ProcessHandle(Protocol):
