@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-import os
 from pathlib import Path
 import subprocess
 import sys
@@ -55,18 +54,18 @@ class SubprocessRunner:
         kwargs: dict = {
             "cwd": str(cwd),
             "env": self._env,
-            "stdout": subprocess.DEVNULL,
-            "stderr": subprocess.DEVNULL,
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE,
         }
         if _on_windows():
             kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
-        else:
-            kwargs["start_new_session"] = True
         proc = subprocess.Popen(command, **kwargs)
         import time
-        time.sleep(0.5)
+        time.sleep(1.0)
         if proc.poll() is not None:
-            raise ProcessStartError(command, f"process exited immediately with code {proc.returncode}")
+            _out, _err = proc.communicate()
+            detail = _err.decode(errors="replace").strip() or f"exit code {proc.returncode}"
+            raise ProcessStartError(command, detail)
         return proc
 
 
