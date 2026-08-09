@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opencode-control-tower"
+version = "0.1.0"
+description = "State core for the OpenCode Background Agent Control Tower"
+requires-python = ">=3.11"
+dependencies = ["anyio>=4", "httpx>=0.27", "textual>=0.80"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests/unit"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

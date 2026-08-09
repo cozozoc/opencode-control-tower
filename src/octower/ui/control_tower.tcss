@@ -1,0 +1,160 @@
+Screen {
+    background: $background;
+    color: $foreground;
+}
+
+Header, Footer {
+    background: $surface;
+}
+
+#board-shell {
+    height: 1fr;
+    padding: 0 1;
+}
+
+#board-toolbar {
+    height: 3;
+    background: $surface;
+    border-bottom: solid $border;
+    padding: 0 1;
+    align-vertical: middle;
+}
+
+#board-title {
+    width: 24;
+    color: $foreground;
+    text-style: bold;
+}
+
+#filter-input {
+    width: 1fr;
+    height: 3;
+    border: none;
+    background: $panel;
+}
+
+#filter-input:focus {
+    border: tall $primary;
+}
+
+#done-count {
+    width: 12;
+    content-align: center middle;
+    color: $success;
+    text-style: bold;
+}
+
+#board-body {
+    height: 1fr;
+}
+
+#lanes-scroll {
+    width: 3fr;
+    height: 1fr;
+    scrollbar-color: $primary;
+    scrollbar-color-hover: $primary-lighten-1;
+}
+
+.state-lane {
+    width: 37;
+    min-width: 37;
+    height: 1fr;
+    margin-right: 1;
+    background: $surface;
+    border: solid $border;
+}
+
+.lane-title {
+    height: 3;
+    padding: 1;
+    color: $text-secondary;
+    text-style: bold;
+}
+
+.state-lane DataTable {
+    height: 1fr;
+    background: $surface;
+    color: $foreground;
+}
+
+.state-lane DataTable > .datatable--cursor {
+    background: $primary-muted;
+    color: $foreground;
+    text-style: bold;
+}
+
+.state-running, .state-recovering {
+    border-top: heavy $success;
+}
+
+.state-slow, .state-suspect, .state-stall_confirming, .state-waiting {
+    border-top: heavy $warning;
+}
+
+.state-failed_recovery, .state-backend_down {
+    border-top: heavy $error;
+}
+
+.state-discovered, .state-degraded, .state-paused {
+    border-top: heavy $secondary;
+}
+
+#detail-rail {
+    width: 2fr;
+    min-width: 38;
+    height: 1fr;
+    padding: 1 2;
+    background: $panel;
+    border-left: solid $border;
+}
+
+.section-title {
+    height: 2;
+    color: $primary-lighten-2;
+    text-style: bold;
+}
+
+#detail-heading, #focus-heading {
+    height: 3;
+    text-style: bold;
+    color: $foreground;
+}
+
+#detail-state, #focus-state {
+    height: 2;
+    color: $warning;
+}
+
+#detail-output, #focus-output, #history-list, #doctor-report {
+    height: 1fr;
+    overflow-y: auto;
+    background: $surface;
+    border: solid $border;
+    padding: 1 2;
+}
+
+#focus-detail {
+    height: 1fr;
+    padding: 1 3;
+}
+
+#focus-state-history {
+    height: 4;
+    padding: 1 2;
+    margin-bottom: 1;
+    background: $panel;
+    color: $secondary-lighten-2;
+}
+
+.view-title {
+    height: 3;
+    padding: 1 2;
+    background: $panel;
+    color: $foreground;
+    text-style: bold;
+    border-bottom: solid $primary;
+}
+
+#history-list, #doctor-report {
+    margin: 1 2;
+}
