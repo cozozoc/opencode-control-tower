@@ -3,13 +3,19 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+import os
 from pathlib import Path
 import subprocess
+import sys
 
 import anyio
 
 from octower.supervisor.process import ProcessStartError
 from octower.supervisor.process import stop_process as _stop_process
+
+
+def _on_windows() -> bool:
+    return sys.platform == "win32"
 
 
 class SubprocessHandle:
@@ -46,14 +52,17 @@ class SubprocessRunner:
         return SubprocessHandle(process)
 
     def _spawn(self, command: tuple[str, ...], cwd: Path) -> subprocess.Popen[bytes]:
-        return subprocess.Popen(
-            command,
-            cwd=str(cwd),
-            env=self._env,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
-        )
+        kwargs: dict = {
+            "cwd": str(cwd),
+            "env": self._env,
+            "stdout": subprocess.DEVNULL,
+            "stderr": subprocess.DEVNULL,
+        }
+        if _on_windows():
+            kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+        else:
+            kwargs["preexec_fn"] = os.setsid
+        return subprocess.Popen(command, **kwargs)
 
 
 async def stop_process(handle: SubprocessHandle, timeout: float) -> None:
