@@ -16,20 +16,24 @@ if ! command -v python3 &>/dev/null || ! python3 --version | grep -q "3\.1[1-9]\
 fi
 echo "  Python OK"
 
-if ! command -v opencode &>/dev/null; then
-    echo "WARNING: opencode 명령어가 PATH에 없습니다"
-fi
-echo "  OpenCode OK"
-
-# tmux 자동 설치
 if ! command -v tmux &>/dev/null; then
     echo "  tmux 설치 중..."
     sudo apt-get update -qq && sudo apt-get install -y -qq tmux
 fi
 echo "  tmux OK"
 
+if ! command -v opencode &>/dev/null; then
+    echo "  opencode 설치 중..."
+    npm install -g opencode-ai -q 2>/dev/null
+    if ! command -v opencode &>/dev/null; then
+        echo "ERROR: opencode 설치 실패"
+        exit 1
+    fi
+fi
+echo "  OpenCode OK"
+
 # 1. Python 패키지 설치
-echo "[1/3] pip install -e $ROOT"
+echo "[1/3] pip install"
 pip install -e "$ROOT" -q --break-system-packages 2>/dev/null || pip install -e "$ROOT" -q
 
 # 2. bashrc에 ctw 등록
