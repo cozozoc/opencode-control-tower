@@ -142,23 +142,24 @@ def build_launch_plan(
     config: LauncherConfig, identity: LaunchIdentity, executable: str
 ) -> LaunchPlan:
     """Construct split/integrated and guarded tmux commands without launching them."""
-    if config.hostname != LOCALHOST:
+    if config.hostname != LOCALHOST and not (config.platform is HostPlatform.WSL2 and config.hostname == "0.0.0.0"):
         raise LocalhostBindingError(config.hostname)
     if config.use_tmux and config.platform is not HostPlatform.WSL2:
         raise TmuxPlatformError(config.platform)
 
+    host = "0.0.0.0" if config.platform is HostPlatform.WSL2 else LOCALHOST
     endpoint = f"http://{LOCALHOST}:{identity.port}"
     match config.mode:
         case LaunchMode.SPLIT:
             backend = (
-                executable, "serve", "--port", str(identity.port), "--hostname", LOCALHOST,
+                executable, "serve", "--port", str(identity.port), "--hostname", host,
             )
             attach = (
                 executable, "attach", endpoint, "--session", config.root_session_id,
             )
         case LaunchMode.INTEGRATED:
             backend = (
-                executable, "--port", str(identity.port), "--hostname", LOCALHOST,
+                executable, "--port", str(identity.port), "--hostname", host,
             )
             attach = None
         case unreachable:

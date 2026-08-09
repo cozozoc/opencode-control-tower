@@ -74,7 +74,7 @@ def test_runner_starts_isolated_windows_process_and_controls_handle(
     assert captured["cwd"] == "C:\\project"
     assert captured["env"] == {"XDG_DATA_HOME": "C:/isolated"}
     assert captured["stdout"] == subprocess.DEVNULL
-    assert captured["stderr"] == subprocess.DEVNULL
+    assert captured["stderr"] == subprocess.PIPE
     assert captured["creationflags"] == subprocess.CREATE_NEW_PROCESS_GROUP
     assert process.terminated is True
     assert process.waited is True
