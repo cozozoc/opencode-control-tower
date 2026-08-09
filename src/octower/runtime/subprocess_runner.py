@@ -54,16 +54,16 @@ class SubprocessRunner:
         kwargs: dict = {
             "cwd": str(cwd),
             "env": self._env,
-            "stdout": subprocess.PIPE,
+            "stdout": subprocess.DEVNULL,
             "stderr": subprocess.PIPE,
         }
         if _on_windows():
             kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
         proc = subprocess.Popen(command, **kwargs)
         import time
-        time.sleep(1.0)
+        time.sleep(1.5)
         if proc.poll() is not None:
-            _out, _err = proc.communicate()
+            _, _err = proc.communicate()
             detail = _err.decode(errors="replace").strip() or f"exit code {proc.returncode}"
             raise ProcessStartError(command, detail)
         return proc

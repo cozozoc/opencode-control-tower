@@ -268,14 +268,21 @@ async def _async_main(options: StartOptions, data_dir: Path) -> None:
             _ROOT_SESSION_ID,
             failure_threshold=3,
             max_restarts=2,
-            health_timeout=2.0,
+            health_timeout=health_timeout,
             restart_timeout=30.0,
             poll_seconds=2.0 if options.fast else 5.0,
-            shutdown_timeout=5.0,
+            shutdown_timeout=shutdown_timeout,
         ),
         BackendDependencies(SubprocessRunner(environment), health, rehydration, TuiNop()),
     )
     _print_instructions(plan.endpoint, port, options.fast)
+    platform = _detect_platform()
+    if platform is HostPlatform.WSL2:
+        health_timeout = 10.0
+        shutdown_timeout = 10.0
+    else:
+        health_timeout = 2.0
+        shutdown_timeout = 5.0
     started_at = time.time()
     try:
         await _monitor(backend, client, AgentStateClassifier(_MonotonicClock(), thresholds), started_at, launch=options.launch)
