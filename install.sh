@@ -30,7 +30,7 @@ echo "  tmux OK"
 
 # 1. Python 패키지 설치
 echo "[1/3] pip install -e $ROOT"
-pip install -e "$ROOT" -q
+pip install -e "$ROOT" -q --break-system-packages 2>/dev/null || pip install -e "$ROOT" -q
 
 # 2. bashrc에 ctw 등록
 echo "[2/3] bashrc에 ctw 명령어 등록"
