@@ -210,7 +210,7 @@ async def _open_attach_tab(backend: BackendProcess, client: OpenCodeClient) -> N
         if "WT_SESSION" in os.environ:
             _sp.run(
                 ["wt.exe", "-w", "0", "new-tab", "--title", tab_title, "--suppressApplicationTitle",
-                 "wsl.exe", "-d", "~", "--", "bash", "-c", f"tmux attach -t {session}"],
+                 "wsl.exe", "--", "bash", "-c", f"cd ~ && tmux attach -t {session}"],
                 check=False,
             )
             print(f"[{_ts()} octower] Windows Terminal tab opened")
