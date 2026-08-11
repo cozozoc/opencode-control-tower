@@ -8,7 +8,7 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 echo ">>> OpenCode Control Tower 설치 (WSL2)"
 
 # 0. 사전 확인
-echo "[0/4] 사전 조건 확인"
+echo "[0/5] 사전 조건 확인"
 
 if ! command -v python3 &>/dev/null || ! python3 --version | grep -q "3\.1[1-9]\|3\.[2-9]"; then
     echo "ERROR: Python 3.11+ 필요"
@@ -33,11 +33,11 @@ fi
 echo "  OpenCode OK"
 
 # 1. Python 패키지 설치
-echo "[1/4] pip install"
+echo "[1/5] pip install"
 pip install -e "$ROOT" -q --break-system-packages 2>/dev/null || pip install -e "$ROOT" -q
 
 # 2. tmux 다크 테마
-echo "[2/4] tmux 다크 테마 설정"
+echo "[2/5] tmux 다크 테마 설정"
 if [ ! -f ~/.tmux.conf ] || ! grep -q "status-bg" ~/.tmux.conf 2>/dev/null; then
     cat >> ~/.tmux.conf << 'EOF'
 
@@ -49,7 +49,7 @@ EOF
 fi
 
 # 3. LLM 모델 사용 제한 시 자동 fallback (opencode-runtime-fallback 플러그인)
-echo "[3/4] 모델 fallback 설정 (DeepSeek V4 Flash Free)"
+echo "[3/5] 모델 fallback 설정 (DeepSeek V4 Flash Free)"
 mkdir -p ~/.config/opencode
 if [ ! -f ~/.config/opencode/opencode.jsonc ]; then
     cat > ~/.config/opencode/opencode.jsonc << 'EOF'
@@ -86,8 +86,12 @@ cat > ~/.config/opencode/opencode-fallback.jsonc << 'EOF'
 }
 EOF
 
-# 4. bashrc에 ctw 등록
-echo "[4/4] bashrc에 ctw 명령어 등록"
+echo "[4/5] subagent 모델 상속 플러그인 설치"
+mkdir -p ~/.config/opencode/plugins
+cp "$ROOT/plugins/inherit-parent-model.js" ~/.config/opencode/plugins/inherit-parent-model.js
+
+# 5. bashrc에 ctw 등록
+echo "[5/5] bashrc에 ctw 명령어 등록"
 if ! grep -q "function ctw" ~/.bashrc 2>/dev/null; then
     cat >> ~/.bashrc << 'EOF'
 
@@ -98,4 +102,5 @@ fi
 
 echo "설치 완료!"
 echo ""
+echo "RESTART REQUIRED: OpenCode를 완전히 종료한 뒤 다시 시작하세요."
 echo "사용법: source ~/.bashrc 후 ctw 입력"
