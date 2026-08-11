@@ -11,6 +11,7 @@ OpenCode 백그라운드 에이전트 자동 감시 & 복구 시스템.
 - **서버 자가 치유** — OpenCode 서버가 죽으면 자동 재시작 후 세션 복원
 - **WSL2 + tmux 통합** — 백그라운드 tmux 세션에서 실행, Windows Terminal 탭 자동 오픈
 - **모델 fallback** — LLM 사용 제한(rate limit) 발생 시 무료 모델로 자동 전환
+- **Subagent 모델 상속** — 부모의 `/models` 선택을 네이티브 및 OmO category/direct subagent가 상속
 - **다크 테마** — tmux 상태 표시줄 기본 다크 테마 적용
 
 ## 요구사항
@@ -38,7 +39,10 @@ source ~/.bashrc
 2. `pip install -e .`
 3. `~/.tmux.conf`에 다크 테마 추가
 4. OpenCode config에 fallback 플러그인 + 무료 모델 등록 (rate limit 대비)
-5. `~/.bashrc`에 `ctw` 명령어 등록
+5. `~/.config/opencode/plugins/inherit-parent-model.js`에 모델 상속 플러그인 설치
+6. `~/.bashrc`에 `ctw` 명령어 등록
+
+설치 또는 갱신 후에는 실행 중인 OpenCode를 완전히 종료하고 다시 시작해야 플러그인이 로드됩니다.
 
 ## 사용법
 
@@ -95,10 +99,21 @@ set -g status-left "#[bg=colour24] #S "   # 좌측 세션명 배경
 기본 모델이 rate limit(429/quota)에 걸리면 자동으로 `opencode/deepseek-v4-flash-free`로 전환되고,
 5분 쿨다운 후 원래 모델로 복귀합니다.
 
+### Subagent 모델 상속
+
+전역 플러그인은 OpenCode 설정을 로드할 때 `agent.*.model` override만 제거합니다. 최상위
+`model`, `small_model`과 agent의 permission, prompt, tools 등 다른 설정은 변경하지 않습니다.
+또한 child session의 메시지를 보내기 직전에 부모의 최신 user 메시지에 기록된 모델과 variant를
+적용합니다. 따라서 부모 세션에서 `/models`로 모델을 바꾸면 OpenCode 네이티브 `task`와 OmO의
+category/direct subagent 모두 동일한 provider, model, variant를 사용합니다.
+
+플러그인을 설치하거나 새 버전으로 갱신한 뒤에는 OpenCode를 완전히 종료하고 다시 시작하세요.
+
 ## 제거
 
 ```bash
 rm -rf ~/opencode-control-tower
+rm -f ~/.config/opencode/plugins/inherit-parent-model.js
 sed -i '/function ctw/d' ~/.bashrc
 pip uninstall opencode-control-tower
 ```
