@@ -18,6 +18,7 @@ OpenCode 백그라운드 에이전트 자동 감시 & 복구 시스템.
 
 - Windows 11 + WSL2 (Ubuntu)
 - Python 3.11+
+- Node.js + npm (OpenCode CLI 설치에 필요)
 - tmux (`bash install.sh`가 자동 설치)
 - OpenCode CLI (`npm install -g opencode-ai` — install.sh가 자동 설치)
 - Windows Terminal (자동 탭 열기용, 선택)
@@ -27,7 +28,7 @@ OpenCode 백그라운드 에이전트 자동 감시 & 복구 시스템.
 WSL2 터미널에서:
 
 ```bash
-git clone git@github.com:cozozoc/opencode-control-tower.git
+git clone https://github.com/cozozoc/opencode-control-tower.git
 cd opencode-control-tower
 bash install.sh
 source ~/.bashrc
@@ -46,9 +47,10 @@ source ~/.bashrc
 
 ## 사용법
 
-WSL2 터미널에서:
+Control Tower 저장소가 아니라 실제 작업할 회사 프로젝트 폴더에서 실행합니다:
 
 ```bash
+cd ~/company-project
 ctw
 ```
 
@@ -68,6 +70,9 @@ ctw
 ```bash
 tmux attach -t octower-XXXXXX   # 세션명은 ctw 로그에서 확인
 ```
+
+OpenCode에서 `/models`로 모델을 선택하면 이후 생성되는 native/OmO subagent가 같은
+provider, model, variant를 상속합니다. 이미 실행 중인 subagent에는 소급 적용되지 않습니다.
 
 ## 설정
 
